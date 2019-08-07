@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="aa_machine_capacity_view_search" model="ir.ui.view">
+            <field name="name">aa.capacity.machine.search</field>
+            <field name="model">aa.capacity.machine</field>
+            <field name="arch" type="xml">
+               <search string="Machine Capacities">
+                    <field name="aa_name" string="Capacity Name"/>
+                    <field name="aa_resource_id"/>
+                    <!-- <field name="aa_last_sunday"/> -->
+                    <separator/>
+                        <filter string="35 Days" name="aa_date"
+                        domain="[('aa_date', '&gt;=', (datetime.date.today() - datetime.timedelta(days=datetime.date.today().weekday()+1)).strftime('%Y-%m-%d')),
+                        ('aa_date', '&lt;=', (datetime.date.today() - (datetime.timedelta(days=datetime.date.today().weekday()+1)) + datetime.timedelta(days=35)).strftime('%Y-%m-%d'))]"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="aa_capacity_machine_form" model="ir.ui.view">
+            <field name="name">Capacity Form</field>
+            <field name="model">aa.capacity.machine</field>
+            <field name="arch" type="xml">
+                <form>
+                    <!-- <header>
+                        <button name="create_machine_capacities" string="Create Machine Capacities" type="object" class="oe_highlight"/>
+                    </header> -->
+                    <sheet>
+                        <group>
+                             <group string="aa_basics">
+                                <field name="aa_name" readonly="1"/>
+                                <field name="aa_html" readonly="1" widget="html" nolabel="1"/>
+                               
+                            </group>
+                                <group string="aa_statistics">
+                                <field name="aa_capacity" widget="float_time"/>                               
+                                <field name="aa_remain_capacity" widget="float_time"/>
+                                <field name="aa_progress" widget="progressbar"/>
+                            </group>
+                            <group string="aa_setup">
+                                <field name="aa_resource_id" required="1" options="{'no_create': True, 'no_create_edit':True}"/>
+                                <field name="aa_date" required="1"/>
+                                <field name="aa_plan_only" invisible="1"/>
+                                <field name="aa_plan_only"/>
+                                <field name="aa_active"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="aa_tasks" string="aa_tasks">
+                                <field name="aa_task_ids" readonly="1">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="aa_production_start_time"/>
+                                        <field name="aa_production_end_time"/>
+                                        <field name="aa_production_time_count" widget="timesheet_uom"/>
+                                    </tree>
+                                </field>
+                                <group>
+                                    <group class="oe_subtotal_footer oe_right">
+                                        <field name="aa_total_Production_time" widget="float_time"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="aa_capacity_machine_tree" model="ir.ui.view">
+            <field name="name">Capacity Tree</field>
+            <field name="model">aa.capacity.machine</field>
+            <field name="arch" type="xml">
+                <tree default_order='aa_date'>
+                    <field name="aa_name"/>
+                    <field name="aa_html" widget="html"/>
+                    <field name="aa_resource_id"/>
+                    <field name="aa_date"/>
+                    <field name="aa_plan_only"/>
+                    <field name="aa_capacity" widget="float_time"/>
+                    <field name="aa_remain_capacity" widget="float_time"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="aa_capacity_machine_kanban_view" model="ir.ui.view">
+            <field name="name">capacity.machine.kanban</field>
+            <field name="model">aa.capacity.machine</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_small_column oe_kanban_card oe_kanban_global_click o_kanban_record" default_group_by="aa_resource_id">
+                    <field name="aa_name"/>
+                    <field name="aa_capacity"/>
+                    <field name="aa_html"/>
+                    <field name="aa_plan_only"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click  #{record.aa_plan_only.raw_value ? 'oe_kanban_aa_plan_only_color' : 'oe_kanban_color_white'}">
+                                <div class="oe_kanban_content">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings">
+                                            <field name="aa_name"/>
+                                            <br/>
+                                            <field name="aa_html" widget="html"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="action_aa_capacity_machine" model="ir.actions.act_window">
+            <field name="name">Capacity</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">aa.capacity.machine</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+        </record>
+
+        <menuitem name="Machine Capacity" id="menu_aa_machine_capacity" parent="project.menu_project_config" action="action_aa_capacity_machine"/>
+
+        <record id="aa_capacity_dashboard_form" model="ir.ui.view">
+            <field name="name">Capacity Form</field>
+            <field name="model">aa.capacity.machine</field>
+            <field name="arch" type="xml">
+                <form create="false" edit="false">
+                    <group col="4" colspan="4">
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <field name="aa_machine_header" invisible="1"/>
+                    <field name="aa_machine_info" invisible="1"/>
+                    <widget name="machine_dashboard"/>
+                </form>
+            </field>
+        </record>
+
+        <record id="aa_action_capacity_dashboard" model="ir.actions.act_window">
+            <field name="name">Capacity Dashboard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">aa.capacity.machine</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="view_id" ref="task_advance.aa_capacity_dashboard_form"/>
+        </record>
+
+        <menuitem name="Machine Capacity Dashboard" id="aa_menu_capacity_dashboard" parent="project.menu_project_config" action="aa_action_capacity_dashboard"/>
+
+    </data>
+</odoo>
